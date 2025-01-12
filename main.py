@@ -1,6 +1,6 @@
 import logging
 
-from telegram import ForceReply, Update
+from telegram import ForceReply, Update, ReplyKeyboardMarkup
 from telegram.ext import Application, CommandHandler, ContextTypes, MessageHandler, filters
 from util import send_text, send_image
 
@@ -12,9 +12,11 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     """Send a message when the command /start is issued."""
     user = update.effective_user
     await update.message.reply_html(
-        rf"Hello {user.mention_html()}!",
-        reply_markup=ForceReply(selective=True),
-    )
+        rf"Hello {user.mention_html()}!")
+    markup = ReplyKeyboardMarkup( [
+        ['1', '2'],
+    ])
+    await context.bot.send_message(update.effective_chat.id, 'Hello, welcome to the bot!', reply_markup=markup)
     print(user)
 
 async def good_bye(update: Update, context: ContextTypes.DEFAULT_TYPE):
