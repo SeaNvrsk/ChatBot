@@ -52,7 +52,7 @@ async def send_text_buttons(update: Update, context: ContextTypes.DEFAULT_TYPE,
 # посылает в чат фото
 async def send_image(update: Update, context: ContextTypes.DEFAULT_TYPE,
                      name: str) -> Message:
-    with open(f'resources/images/{name}.jpg', 'rb') as image:
+    with open(f'resources/images/{name}.webp', 'rb') as image:
         return await context.bot.send_photo(chat_id=update.effective_chat.id,
                                             photo=image)
 
