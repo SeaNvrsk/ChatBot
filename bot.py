@@ -55,6 +55,20 @@ async def gpt_dialogue(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await message.edit_text('...')
     await send_text_buttons(update, context, answer, buttons={'stop':'Завершить'})
 
+async def weather(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    context.user_data['mode'] = 'weather'
+    chat_gpt.set_prompt(load_prompt('weather'))
+    text = load_message('weather')
+    await send_image(update, context, 'weather')
+    await send_text(update, context, text)
+
+async def weather_info(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    request = update.message.text
+    message = await send_text(update, context, "Закрываю глаза и представляю погоду на завтра...")
+    answer = await chat_gpt.add_message(request)
+    await message.edit_text('...')
+    await send_text_buttons(update, context, answer, buttons={'stop': 'Завершить'})
+
 async def stop(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await update.callback_query.answer()
     await start(update, context)
@@ -62,6 +76,8 @@ async def stop(update: Update, context: ContextTypes.DEFAULT_TYPE):
 async def text_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if context.user_data.get('mode') == 'gpt':
         await gpt_dialogue(update, context)
+    elif context.user_data.get('mode') == 'weather':
+        await weather_info(update, context)
 
 
 app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, text_handler))
@@ -71,6 +87,7 @@ app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, text_handler))
 app.add_handler(CommandHandler('start', start))
 app.add_handler(CommandHandler('random', random))
 app.add_handler(CommandHandler('gpt', gpt))
+app.add_handler(CommandHandler('weather', weather))
 # Зарегистрировать обработчик коллбэка можно так:
 # app.add_handler(CallbackQueryHandler(app_button, pattern='^app_.*'))
 app.add_handler(CallbackQueryHandler(stop, pattern='stop'))
