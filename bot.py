@@ -69,12 +69,32 @@ async def weather_info(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await message.edit_text('...')
     await send_text_buttons(update, context, answer, buttons={'stop': 'Завершить'})
 
+async def talk(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    context.user_data['mode'] = 'talk'
+    text = load_message('talk')
+    await send_image(update, context, 'talk')
+    await send_text_buttons(update, context, text, buttons={
+        'talk_cobain' : 'Курт Кобейн',
+        'talk_hawking' : 'Стивен Хокинг',
+        'talk_nietzsche' : 'Фридрих Ницще',
+        'talk_queen' : 'Королева Елизавета',
+        'talk_tolkien' : 'Джон Толкиен'
+    })
+
+async def talk_buttons(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    await update.callback_query.answer()
+    data = update.callback_query.data
+    chat_gpt.set_prompt(load_prompt(data))
+    greet = await chat_gpt.add_message('Поздоровайся со мной')
+    await send_image(update, context, data)
+    await send_text(update, context, greet)
+
 async def stop(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await update.callback_query.answer()
     await start(update, context)
 
 async def text_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    if context.user_data.get('mode') == 'gpt':
+    if context.user_data.get('mode') in ('gpt', 'talk'):
         await gpt_dialogue(update, context)
     elif context.user_data.get('mode') == 'weather':
         await weather_info(update, context)
@@ -84,6 +104,7 @@ app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, text_handler))
 
 # Зарегистрировать обработчик команды можно так:
 # app.add_handler(CommandHandler('command', handler_func))
+app.add_handler(CommandHandler('talk', talk))
 app.add_handler(CommandHandler('start', start))
 app.add_handler(CommandHandler('random', random))
 app.add_handler(CommandHandler('gpt', gpt))
@@ -92,4 +113,5 @@ app.add_handler(CommandHandler('weather', weather))
 # app.add_handler(CallbackQueryHandler(app_button, pattern='^app_.*'))
 app.add_handler(CallbackQueryHandler(stop, pattern='stop'))
 app.add_handler(CallbackQueryHandler(random_more, pattern='^random_.*'))
+app.add_handler(CallbackQueryHandler(talk_buttons, pattern='^talk_.*'))
 app.run_polling()
